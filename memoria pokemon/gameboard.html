@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Juego de Memoria</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      background-color: #f0f0f0;
+    }
+
+    .game-board {
+      display: grid;
+      grid-template-columns: repeat(5, 100px);
+      gap: 10px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+
+    .carta {
+      width: 100px;
+      height: 100px;
+      perspective: 600px;
+      cursor: pointer;
+    }
+
+    .cara {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      backface-visibility: hidden;
+      border-radius: 8px;
+      overflow: hidden;
+      transition: transform 0.6s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .trasera {
+      background-color: #eee;
+      transform: rotateY(0deg);
+    }
+
+    .delantera {
+      transform: rotateY(180deg);
+    }
+
+    .carta.volteada .trasera {
+      transform: rotateY(180deg);
+    }
+
+    .carta.volteada .delantera {
+      transform: rotateY(0deg);
+    }
+
+    .stats-panel {
+      margin-top: 20px;
+      font-size: 18px;
+    }
+
+    #restart {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Juego de Memoria</h1>
+
+  <div class="game-board" id="tablero"></div>
+
+  <div class="stats-panel">
+    <span id="movimientos">Movimientos: 0</span> |
+    <span id="tiempo">Tiempo: 00:00</span>
+  </div>
+
+  <button id="restart" onclick="reiniciarJuego()">Reiniciar</button>
+
+  <script>
+    const tablero = document.getElementById("tablero");
+    const movimientosSpan = document.getElementById("movimientos");
+    const tiempoSpan = document.getElementById("tiempo");
+
+    const cartas = [
+      "imagenes/bulbasaur.png",
+      "imagenes/charmander.png",
+      "imagenes/eevee.png",
+      "imagenes/gastly.png",
+      "imagenes/magikarp-f.png",
+      "imagenes/mew.png",
+      "imagenes/pikachu-f.png",
+      "imagenes/psyduck.png",
+      "imagenes/sandshrew.png",
+      "imagenes/squirtle.png"
+    ];
+
+    let cartasVolteadas = [];
+    let bloqueo = false;
+    let movimientos = 0;
+    let tiempo = 0;
+    let intervalo;
+
+    function crearTablero() {
+      tablero.innerHTML = "";
+      cartasVolteadas = [];
+      bloqueo = false;
+      movimientos = 0;
+      tiempo = 0;
+      movimientosSpan.innerText = "Movimientos: 0";
+      tiempoSpan.innerText = "Tiempo: 00:00";
+      clearInterval(intervalo);
+      intervalo = setInterval(actualizarTiempo, 1000);
+
+      const pares = [...cartas, ...cartas];
+      const cartasMezcladas = pares.sort(() => 0.5 - Math.random());
+
+      cartasMezcladas.forEach((ruta, index) => {
+        const carta = document.createElement("div");
+        carta.classList.add("carta");
+        carta.dataset.valor = ruta;
+        carta.dataset.index = index;
+
+        const trasera = document.createElement("div");
+        trasera.classList.add("cara", "trasera");
+        trasera.innerHTML = `<img src="imagenes/reverso.jpg" width="80" height="100">`;
+
+        const delantera = document.createElement("div");
+        delantera.classList.add("cara", "delantera");
+        delantera.innerHTML = `<img src="${ruta}" width="80" height="80">`;
+
+        carta.appendChild(trasera);
+        carta.appendChild(delantera);
+
+        carta.onclick = () => voltearCarta(carta);
+        tablero.appendChild(carta);
+      });
+    }
+
+    function voltearCarta(carta) {
+      if (bloqueo || carta.classList.contains("volteada")) return;
+
+      carta.classList.add("volteada");
+      cartasVolteadas.push(carta);
+
+      if (cartasVolteadas.length === 2) {
+        movimientos++;
+        movimientosSpan.innerText = `Movimientos: ${movimientos}`;
+        bloqueo = true;
+
+        const [c1, c2] = cartasVolteadas;
+
+        if (c1.dataset.valor === c2.dataset.valor) {
+          cartasVolteadas = [];
+          bloqueo = false;
+        } else {
+          setTimeout(() => {
+            c1.classList.remove("volteada");
+            c2.classList.remove("volteada");
+            cartasVolteadas = [];
+            bloqueo = false;
+          }, 1000);
+        }
+      }
+    }
+
+    function actualizarTiempo() {
+      tiempo++;
+      const minutos = Math.floor(tiempo / 60);
+      const segundos = tiempo % 60;
+      tiempoSpan.innerText = `Tiempo: ${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
+    }
+
+    function reiniciarJuego() {
+      crearTablero();
+    }
+
+    crearTablero();
+  </script>
+</body>
+</html>
