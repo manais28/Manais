@@ -6,11 +6,10 @@
   <style>
     body {
       font-family: sans-serif;
-      background-image: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEh0TLw0DbSmSEkVm13eAH0g-nqXkVy9ce7f18X38W5hNE89eV2duhXGpaZXz9qQt-P1mc_Mnd1e2wiY32Ky7RiTimmrYv8B6745vkady0gCpg-ivtrxzEn1LzvJTNTggupoEWVw7s8evygwOIbrlYO60KMBsXMpGJFehsPYUhzvdyJU0D_ajMHGYh6o/s16000/macos-bg.jpg');
+      background-image: url('imagenes/macos-bg.jpg');
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
-      height: 100vh;
       margin: 0;
       display: flex;
       align-items: center;
@@ -22,16 +21,46 @@
       background-color: rgba(0, 0, 0, 0.4);
       border-radius: 20px;
       padding: 40px;
-      width: 90%;
-      max-width: 800px;
+      width: 45%;
       box-shadow: 0 0 20px rgba(0,0,0,0.6);
       display: flex;
       flex-direction: column;
       align-items: center;
       position: relative;
+      margin-top: 20px;
     }
 
-    h1 {
+    .contenedorScore {
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  width: 15%;
+  background-color: rgba(0, 0, 0, 0.4);
+  padding: 40px;
+  height: 606px;
+  border-radius: 20px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.6);
+}
+
+    .contenedorRanking {
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 15%;
+  background-color: rgba(0, 0, 0, 0.4);
+  padding: 40px;
+  height: 606px;
+  border-radius: 20px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.6);
+}
+
+    /*h1 {
       font-size: 36px;
       font-weight: bold;
       font-family: 'Arial Black', sans-serif;
@@ -41,7 +70,7 @@
       -webkit-text-fill-color: transparent;
       text-shadow: 1px 1px 0 #000, 2px 2px 2px rgba(0,0,0,0.5);
       margin-bottom: 20px;
-    }
+    }*/
 
     .stats-panel {
       position: absolute;
@@ -50,6 +79,8 @@
       display: flex;
       flex-direction: column;
       gap: 10px;
+      background-color: rgba(0, 0, 0, 0.4);
+      border-radius: 12px;
     }
 
     .stat-box {
@@ -64,6 +95,10 @@
       background-clip: text;
       -webkit-text-fill-color: transparent;
       text-shadow: 1px 1px 0 #000, 2px 2px 2px rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 50px;
     }
 
     .game-board {
@@ -130,18 +165,28 @@
   </style>
 </head>
 <body>
-
-  <div class="stats-panel">
-    <div class="stat-box" id="movimientos">Movimientos: 0</div>
-    <div class="stat-box" id="tiempo">Tiempo: 00:00</div>
+<div class="contenedorScore">
+  <div class="stat-box">
+    <img src="imagenes/Tiempo200x78px.png" alt="Tiempo" style="height: 30px;">
+    <span id="tiempo" style="margin-left: 10px;">00:00</span>
   </div>
 
+  <div class="stat-box">
+    <img src="imagenes/movimientos200x58Px.png" alt="Movimientos" style="height: 30px;">
+    <span id="movimientos" style="margin-left: 10px;">: 0</span>
+  </div>
+</div>
   <div class="contenedor">
-    <h1>PokeMemoria</h1>
+    
+<img src="imagenes/Pokememoria.png" alt="PokeMemoria" style="width: 100%; max-width: 300px; margin-bottom: 20px;">
 
     <div class="game-board" id="tablero"></div>
 
     <button id="restart" onclick="reiniciarJuego()">Reiniciar</button>
+  </div>
+
+  <div class="contenedorRanking">
+    <!-- aqui va el codigo de ranking -->
   </div>
 
   <script>
@@ -174,8 +219,8 @@
       bloqueo = false;
       movimientos = 0;
       tiempo = 0;
-      movimientosSpan.innerText = "Movimientos: 0";
-      tiempoSpan.innerText = "Tiempo: 00:00";
+      movimientosSpan.innerText = ': 0';
+      tiempoSpan.innerText = "00:00";
       clearInterval(intervalo);
       intervalo = setInterval(actualizarTiempo, 1000);
 
@@ -212,7 +257,7 @@
 
       if (cartasVolteadas.length === 2) {
         movimientos++;
-        movimientosSpan.innerText = `Movimientos: ${movimientos}`;
+        movimientosSpan.innerText = `: ${movimientos}`;
         bloqueo = true;
 
         const [c1, c2] = cartasVolteadas;
@@ -235,7 +280,7 @@
       tiempo++;
       const minutos = Math.floor(tiempo / 60);
       const segundos = tiempo % 60;
-      tiempoSpan.innerText = `Tiempo: ${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
+      tiempoSpan.innerText = `: ${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
     }
 
     function reiniciarJuego() {
