@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <title>PokeMemoria</title>
-  <link rel="icon" href="imagenes/icono-arepaticoV2.ico" type="image/x-icon">
+  <link rel="icon" href="imagenes/titulos/icono-arepaticoV2.ico" type="image/x-icon">
   <style>
     body {
       font-family: sans-serif;
-      background-image: url('imagenes/macos-bg.jpg');
+      background-image: url('imagenes/fondo/macos-bg.jpg');
       background-size: cover;
       background-position: center;
       background-repeat: no-repeat;
@@ -120,7 +120,7 @@
     }
 
     .cara {
-      width: 80%;
+      width: 100%;
       height: 100%;
       position: absolute;
       backface-visibility: hidden;
@@ -133,7 +133,6 @@
     }
 
     .trasera {
-      /*background-color: #eee;*/
       transform: rotateY(0deg);
     }
 
@@ -149,46 +148,82 @@
       transform: rotateY(0deg);
     }
 
-    #restart {
-      margin-top: 20px;
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-      background-color: rgba(255, 255, 255, 0.2);
-      border: 1px solid white;
-      color: white;
-      border-radius: 8px;
-      transition: background-color 0.3s;
-    }
+    .carta.reverso {
+  animation: girarReverso 0.6s forwards;
+}
 
-    #restart:hover {
-      background-color: rgba(255, 255, 255, 0.4);
-    }
+@keyframes girarReverso {
+  0% {
+    transform: rotateY(0deg);
+  }
+  100% {
+    transform: rotateY(180deg);
+  }
+}
+
+
+#reiniciarBtn {
+  background: none;
+  border: none;
+  padding: 20px;
+  cursor: pointer;
+  width: auto;
+  height: auto;
+}
+
+.boton-reiniciar {
+  display: block;
+  transition: transform 0.1s ease, box-shadow 0.2s ease;
+}
+
+/* Animación al presionar */
+#reiniciarBtn:active .boton-reiniciar {
+  transform: scale(0.95);
+}
+
+/* Responsivo para pantallas pequeñas */
+@media (max-width: 600px) {
+  .boton-reiniciar {
+    width: 150px;
+  }
+}
+
+
   </style>
 </head>
 <body>
 <div class="contenedorScore">
   <div class="stat-box">
-    <img src="imagenes/Tiempo200x78px.png" alt="Tiempo" style="height: 30px;">
+    <img src="imagenes/titulos/tiempov2.png" alt="Tiempo" style="height: 27px;">
     <span id="tiempo" style="margin-left: 10px;">00:00</span>
   </div>
 
   <div class="stat-box">
-    <img src="imagenes/movimientos200x58Px.png" alt="Movimientos" style="height: 30px;">
+    <img src="imagenes/titulos/movimientosv2.png" alt="Movimientos" style="height: 30px;">
     <span id="movimientos" style="margin-left: 10px;">: 0</span>
   </div>
 </div>
   <div class="contenedor">
-<img src="imagenes/Pokememoria.png" alt="PokeMemoria" style="width: 100%; max-width: 300px; margin-bottom: 20px;">
+<img src="imagenes/titulos/Pokememoria.png" alt="PokeMemoria" style="width: 100%; max-width: 300px; margin-bottom: 10px;">
 
     <div class="game-board" id="tablero"></div>
 
-    <button id="restart" onclick="reiniciarJuego()">Reiniciar</button>
+<button id="reiniciarBtn" onclick="reiniciarJuego()" class="boton-reiniciar">
+  <img src="imagenes/titulos/reiniciar125x75.png" alt="Reiniciar">
+</button>
+
+<audio id="sonidoReiniciar" src="sonidos/plink.mp3" preload="auto"></audio>
+
   </div>
 
   <div class="contenedorRanking">
     <!-- aqui va el codigo de ranking -->
   </div>
+
+    <audio id="sonidoVoltear" src="sonidos/voltear.mp3" preload="auto"></audio>
+    <audio id="sonidoMatch" src="sonidos/match.mp3" preload="auto"></audio>
+    <audio id="sonidoError" src="sonidos/error.mp3" preload="auto"></audio>
+
 
   <script>
     const tablero = document.getElementById("tablero");
@@ -196,16 +231,16 @@
     const tiempoSpan = document.getElementById("tiempo");
 
     const cartas = [
-      "imagenes/bulbasaur.png",
-      "imagenes/charmander.png",
-      "imagenes/eevee.png",
-      "imagenes/gastly.png",
-      "imagenes/magikarp-f.png",
-      "imagenes/mew.png",
-      "imagenes/pikachu-f.png",
-      "imagenes/psyduck.png",
-      "imagenes/sandshrew.png",
-      "imagenes/squirtle.png"
+      "imagenes/sprite/bulbasaur.png",
+      "imagenes/sprite/charmander.png",
+      "imagenes/sprite/eevee.png",
+      "imagenes/sprite/gastly.png",
+      "imagenes/sprite/magikarp-f.png",
+      "imagenes/sprite/mew.png",
+      "imagenes/sprite/pikachu-f.png",
+      "imagenes/sprite/psyduck.png",
+      "imagenes/sprite/sandshrew.png",
+      "imagenes/sprite/squirtle.png"
     ];
 
     let cartasVolteadas = [];
@@ -236,7 +271,13 @@
 
         const trasera = document.createElement("div");
         trasera.classList.add("cara", "trasera");
-        trasera.innerHTML = `<img src="imagenes/reversov2.png" width="80" height="120">`;
+        trasera.innerHTML = `<img src="imagenes/cartas/reversov3.png" 
+        width="80" 
+        height="100" 
+        style="border-radius: 8px;
+        box-shadow: 2px 0 0 0 rgba(0, 0, 0, 0.4);
+        ">`;
+
 
         const delantera = document.createElement("div");
         delantera.classList.add("cara", "delantera");
@@ -250,32 +291,45 @@
       });
     }
 
-    function voltearCarta(carta) {
-      if (bloqueo || carta.classList.contains("volteada")) return;
+function voltearCarta(carta) {
+    if (bloqueo || carta.classList.contains("volteada")) return;
 
-      carta.classList.add("volteada");
-      cartasVolteadas.push(carta);
+    carta.classList.add("volteada");
+    reproducirSonido("sonidoVoltear"); // 🔊 Sonido al voltear
+    cartasVolteadas.push(carta);
 
-      if (cartasVolteadas.length === 2) {
-        movimientos++;
-        movimientosSpan.innerText = `: ${movimientos}`;
-        bloqueo = true;
+    if (cartasVolteadas.length === 2) {
+      movimientos++;
+      movimientosSpan.innerText = `: ${movimientos}`;
+      bloqueo = true;
 
-        const [c1, c2] = cartasVolteadas;
+      const [c1, c2] = cartasVolteadas;
 
-        if (c1.dataset.valor === c2.dataset.valor) {
+      if (c1.dataset.valor === c2.dataset.valor) {
+        reproducirSonido("sonidoMatch"); // ✅ Sonido de acierto
+        cartasVolteadas = [];
+        bloqueo = false;
+      } else {
+        reproducirSonido("sonidoError"); // ❌ Sonido de error
+        setTimeout(() => {
+          c1.classList.remove("volteada");
+          c2.classList.remove("volteada");
           cartasVolteadas = [];
           bloqueo = false;
-        } else {
-          setTimeout(() => {
-            c1.classList.remove("volteada");
-            c2.classList.remove("volteada");
-            cartasVolteadas = [];
-            bloqueo = false;
-          }, 1000);
-        }
+        }, 1000);
       }
     }
+  }
+
+
+    function reproducirSonido(id) {
+      const sonido = document.getElementById(id);
+      if (sonido) {
+      sonido.currentTime = 0;
+      sonido.play();
+    }
+  }
+
 
     function actualizarTiempo() {
       tiempo++;
@@ -284,9 +338,22 @@
       tiempoSpan.innerText = `: ${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
     }
 
-    function reiniciarJuego() {
-      crearTablero();
-    }
+function reiniciarJuego() {
+  const sonido = document.getElementById("sonidoReiniciar");
+  sonido.currentTime = 0;
+  sonido.play();
+
+  const cartasActuales = document.querySelectorAll(".carta");
+  cartasActuales.forEach((carta, i) => {
+    carta.classList.remove("volteada");
+    carta.classList.add("reverso");
+  });
+
+  // Espera a que termine la animación antes de borrar y crear el nuevo tablero
+  setTimeout(() => {
+    crearTablero();
+  }, 600); // mismo tiempo que la animación
+}
 
     crearTablero();
   </script>
