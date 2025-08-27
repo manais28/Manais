@@ -226,117 +226,140 @@
 
 
   <script>
-    const tablero = document.getElementById("tablero");
-    const movimientosSpan = document.getElementById("movimientos");
-    const tiempoSpan = document.getElementById("tiempo");
+const tablero = document.getElementById("tablero");
+const movimientosSpan = document.getElementById("movimientos");
+const tiempoSpan = document.getElementById("tiempo");
 
-    const cartas = [
-      "imagenes/sprite/bulbasaur.png",
-      "imagenes/sprite/charmander.png",
-      "imagenes/sprite/eevee.png",
-      "imagenes/sprite/gastly.png",
-      "imagenes/sprite/magikarp-f.png",
-      "imagenes/sprite/mew.png",
-      "imagenes/sprite/pikachu-f.png",
-      "imagenes/sprite/psyduck.png",
-      "imagenes/sprite/sandshrew.png",
-      "imagenes/sprite/squirtle.png"
-    ];
+const cartas = [
+  "imagenes/sprite/bulbasaur.png",
+  "imagenes/sprite/charmander.png",
+  "imagenes/sprite/eevee.png",
+  "imagenes/sprite/gastly.png",
+  "imagenes/sprite/magikarp-f.png",
+  "imagenes/sprite/mew.png",
+  "imagenes/sprite/pikachu-f.png",
+  "imagenes/sprite/psyduck.png",
+  "imagenes/sprite/sandshrew.png",
+  "imagenes/sprite/squirtle.png"
+];
 
-    let cartasVolteadas = [];
-    let bloqueo = false;
-    let movimientos = 0;
-    let tiempo = 0;
-    let intervalo;
+let cartasVolteadas = [];
+let bloqueo = false;
+let movimientos = 0;
+let tiempo = 0;
+let intervalo;
+let paresEncontrados = 0;
 
-    function crearTablero() {
-      tablero.innerHTML = "";
-      cartasVolteadas = [];
-      bloqueo = false;
-      movimientos = 0;
-      tiempo = 0;
-      movimientosSpan.innerText = ': 0';
-      tiempoSpan.innerText = "00:00";
-      clearInterval(intervalo);
-      intervalo = setInterval(actualizarTiempo, 1000);
+function crearTablero() {
+  tablero.innerHTML = "";
+  cartasVolteadas = [];
+  bloqueo = false;
+  movimientos = 0;
+  tiempo = 0;
+  paresEncontrados = 0;
+  movimientosSpan.innerText = ': 0';
+  tiempoSpan.innerText = "00:00";
+  clearInterval(intervalo);
+  intervalo = setInterval(actualizarTiempo, 1000);
 
-      const pares = [...cartas, ...cartas];
-      const cartasMezcladas = pares.sort(() => 0.5 - Math.random());
+  const pares = [...cartas, ...cartas];
+  const cartasMezcladas = pares.sort(() => 0.5 - Math.random());
 
-      cartasMezcladas.forEach((ruta, index) => {
-        const carta = document.createElement("div");
-        carta.classList.add("carta");
-        carta.dataset.valor = ruta;
-        carta.dataset.index = index;
+  cartasMezcladas.forEach((ruta, index) => {
+    const carta = document.createElement("div");
+    carta.classList.add("carta");
+    carta.dataset.valor = ruta;
+    carta.dataset.index = index;
 
-        const trasera = document.createElement("div");
-        trasera.classList.add("cara", "trasera");
-        trasera.innerHTML = `<img src="imagenes/cartas/reversov3.png" 
-        width="80" 
-        height="100" 
-        style="border-radius: 8px;
-        box-shadow: 2px 0 0 0 rgba(0, 0, 0, 0.4);
-        ">`;
+    const trasera = document.createElement("div");
+    trasera.classList.add("cara", "trasera");
+    trasera.innerHTML = `<img src="imagenes/cartas/reversov3.png" 
+      width="80" 
+      height="100" 
+      style="border-radius: 8px;
+      box-shadow: 2px 0 0 0 rgba(0, 0, 0, 0.4);">`;
 
+    const delantera = document.createElement("div");
+    delantera.classList.add("cara", "delantera");
+    delantera.innerHTML = `<img src="${ruta}" width="80" height="80">`;
 
-        const delantera = document.createElement("div");
-        delantera.classList.add("cara", "delantera");
-        delantera.innerHTML = `<img src="${ruta}" width="80" height="80">`;
+    carta.appendChild(trasera);
+    carta.appendChild(delantera);
 
-        carta.appendChild(trasera);
-        carta.appendChild(delantera);
-
-        carta.onclick = () => voltearCarta(carta);
-        tablero.appendChild(carta);
-      });
-    }
+    carta.onclick = () => voltearCarta(carta);
+    tablero.appendChild(carta);
+  });
+}
 
 function voltearCarta(carta) {
-    if (bloqueo || carta.classList.contains("volteada")) return;
+  if (bloqueo || carta.classList.contains("volteada")) return;
 
-    carta.classList.add("volteada");
-    reproducirSonido("sonidoVoltear"); // 🔊 Sonido al voltear
-    cartasVolteadas.push(carta);
+  carta.classList.add("volteada");
+  reproducirSonido("sonidoVoltear");
+  cartasVolteadas.push(carta);
 
-    if (cartasVolteadas.length === 2) {
-      movimientos++;
-      movimientosSpan.innerText = `: ${movimientos}`;
-      bloqueo = true;
+  if (cartasVolteadas.length === 2) {
+    movimientos++;
+    movimientosSpan.innerText = `: ${movimientos}`;
+    bloqueo = true;
 
-      const [c1, c2] = cartasVolteadas;
+    const [c1, c2] = cartasVolteadas;
 
-      if (c1.dataset.valor === c2.dataset.valor) {
-        reproducirSonido("sonidoMatch"); // ✅ Sonido de acierto
+    if (c1.dataset.valor === c2.dataset.valor) {
+      reproducirSonido("sonidoMatch");
+      cartasVolteadas = [];
+      bloqueo = false;
+      paresEncontrados++;
+
+      if (paresEncontrados === cartas.length) {
+        finalizarJuego();
+      }
+    } else {
+      reproducirSonido("sonidoError");
+      setTimeout(() => {
+        c1.classList.remove("volteada");
+        c2.classList.remove("volteada");
         cartasVolteadas = [];
         bloqueo = false;
-      } else {
-        reproducirSonido("sonidoError"); // ❌ Sonido de error
-        setTimeout(() => {
-          c1.classList.remove("volteada");
-          c2.classList.remove("volteada");
-          cartasVolteadas = [];
-          bloqueo = false;
-        }, 1000);
-      }
+      }, 1000);
     }
   }
+}
 
+function finalizarJuego() {
+  clearInterval(intervalo);
 
-    function reproducirSonido(id) {
-      const sonido = document.getElementById(id);
-      if (sonido) {
-      sonido.currentTime = 0;
-      sonido.play();
-    }
+  const nombre = prompt("¡Felicitaciones! Ingresa tu nombre para el ranking:");
+  if (nombre) {
+    fetch('http://localhost:5013/api/ranking', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        nombre: nombre,
+        tiempo: tiempo,
+        movimientos: movimientos
+      })
+    })
+    .then(res => res.text())
+    .then(msg => console.log(msg))
+    .catch(err => console.error("Error al guardar ranking:", err));
   }
+}
 
+function reproducirSonido(id) {
+  const sonido = document.getElementById(id);
+  if (sonido) {
+    sonido.currentTime = 0;
+    sonido.play();
+  }
+}
 
-    function actualizarTiempo() {
-      tiempo++;
-      const minutos = Math.floor(tiempo / 60);
-      const segundos = tiempo % 60;
-      tiempoSpan.innerText = `: ${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
-    }
+function actualizarTiempo() {
+  tiempo++;
+  const minutos = Math.floor(tiempo / 60);
+  const segundos = tiempo % 60;
+  tiempoSpan.innerText = `: ${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
+}
 
 function reiniciarJuego() {
   const sonido = document.getElementById("sonidoReiniciar");
@@ -349,13 +372,13 @@ function reiniciarJuego() {
     carta.classList.add("reverso");
   });
 
-  // Espera a que termine la animación antes de borrar y crear el nuevo tablero
   setTimeout(() => {
     crearTablero();
-  }, 600); // mismo tiempo que la animación
+  }, 600);
 }
 
-    crearTablero();
+crearTablero();
+
   </script>
 </body>
 </html>
